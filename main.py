@@ -7,8 +7,6 @@ from wtforms.validators import DataRequired
 import requests
 import os
 
-
-
 db = SQLAlchemy()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SQL_KEY']
@@ -17,6 +15,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///movies_database.db"
 db.init_app(app)
 
 TMDB_API_KEY = os.environ['TMDB_API_KEY']
+
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,15 +41,16 @@ class Movie(db.Model):
 with app.app_context():
     db.create_all()
 
+
 class editForm(FlaskForm):
     rating = FloatField('Your Rating Out of 10. Ex: 7.5', validators=[DataRequired()])
     review = StringField('Your Review', validators=[DataRequired()])
     submit_edit = SubmitField(label="Done")
 
+
 class addForm(FlaskForm):
     movie_title = StringField('Title', validators=[DataRequired()])
     submit_add = SubmitField(label="Add Movie")
-
 
 
 @app.route("/")
@@ -63,8 +63,8 @@ def home():
         all_movies[i].ranking = len(all_movies) - i
     db.session.commit()
 
-
     return render_template("index.html", all_movies=all_movies)
+
 
 @app.route('/edit/<num>', methods=('GET', 'POST'))
 def edit(num):
@@ -72,15 +72,15 @@ def edit(num):
     movie = db.get_or_404(Movie, num)
     form = editForm()
     if request.method == 'POST':
-        #gets the rating from the form
+        # gets the rating from the form
         movie_rating = form.rating.data
         movie_review = form.review.data
-        #gets the movie from the database
+        # gets the movie from the database
         movie = db.get_or_404(Movie, num)
-        #updates the movies objects rating and review values with values from forms
+        # updates the movies objects rating and review values with values from forms
         movie.rating = movie_rating
         movie.review = movie_review
-        #commit changes
+        # commit changes
         db.session.commit()
         return redirect((url_for("home")))
     return render_template("edit.html", movie=movie, form=form)
@@ -94,6 +94,7 @@ def delete():
     db.session.delete(movie)
     db.session.commit()
     return redirect((url_for("home")))
+
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
@@ -167,6 +168,7 @@ def find():
     db.session.commit()
 
     return redirect(url_for("edit", num=movie_id))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
